@@ -1,14 +1,17 @@
 import * as loaderUtils from 'loader-utils'
 import * as mime from 'mime'
+import * as sha1 from 'sha1'
+import { basename } from 'path'
 
+import cache from './cache'
 import upload from './upload'
 
 interface Loader {
-    (content: Buffer): any
+    (content: Buffer | string): any
     raw?: boolean
 }
 
-const loader: Loader = function(content: Buffer) {
+const loader: Loader = function(content) {
     this.cacheable && this.cacheable()
     let options =  loaderUtils.getOptions(this) || {}
     let limit = options.limit || (this.options && this.options.url && this.options.url.dataUrlLimit)
@@ -19,16 +22,20 @@ const loader: Loader = function(content: Buffer) {
 
     let mimetype = options.mimetype || options.minetype || mime.lookup(this.resourcePath)
 
+
+    if(typeof content === "string") {
+        content = new Buffer(content)
+    }
+    
+    content = content.toString("base64")
+
     if(!limit || content.length < limit) {
-        if(typeof content === "string") {
-            content = new Buffer(content)
-        }
-        return "module.exports = " + JSON.stringify("data:" + (mimetype ? mimetype + "" : "") + "base64," + content.toString("base64"))
+        return "module.exports = " + JSON.stringify("data:" + (mimetype ? mimetype + "" : "") + "base64," + content)
     } else {
         let callback = this.async()
         let fn = options.uploadFn || upload
 
-        fn.call(null, options.uploadUrl, this.resourcePath).then(([filepath, url]) => {
+        fn.call(null, options.uploadUrl, this.resourcePath, content).then(([filepath, url]) => {
             callback(null, "module.exports = " + JSON.stringify(`${url}`))
         })
     }
