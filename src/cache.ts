@@ -60,13 +60,20 @@ const get = (key:string, path?:string) => {
         let data = _cache[key]
 
         if (data) {
-            data.expiredDay = NEWEXPIREDDAY
+            let shouldFlush = false
+
+            if (data.expiredDay !== NEWEXPIREDDAY) {
+                data.expiredDay = NEWEXPIREDDAY
+                shouldFlush = true
+            }
 
             if (path && !data.paths.includes(path)) {
                 data.paths.push(path)
-                flush()
+                shouldFlush = true
             }
 
+            shouldFlush && flush()
+            
             return data.value
         }
     }
