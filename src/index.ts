@@ -29,7 +29,7 @@ const loader: Loader = function(content) {
     content = content.toString("base64")
 
     if(!limit || content.length < limit) {
-        return "module.exports = " + JSON.stringify("data:" + (mimetype ? mimetype + "" : "") + "base64," + content)
+        return "module.exports = " + JSON.stringify("data:" + (mimetype ? mimetype + ";" : "") + "base64," + content)
     } else {
         let callback = this.async()
         let fn = options.uploadFn || upload
