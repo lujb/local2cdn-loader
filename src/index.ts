@@ -8,7 +8,6 @@ import upload from './upload'
 
 interface Loader {
     (content: Buffer | string): any
-    raw?: boolean
 }
 
 const loader: Loader = function(content) {
@@ -41,6 +40,6 @@ const loader: Loader = function(content) {
     }
 }
 
-loader.raw = true
+export const raw = true
 
 export default loader
