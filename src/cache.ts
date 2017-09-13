@@ -87,10 +87,10 @@ const set = (key:string, value:string, path?:string) => {
         
         if (path) {
             _cache[key].paths = [path]
-            flush()
-
-            return true
         }
+	flush()
+
+	return true
     }
 
     return false
