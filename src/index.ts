@@ -26,17 +26,23 @@ const loader: Loader = function(content) {
         content = new Buffer(content)
     }
     
-    content = content.toString("base64")
+    let b64Content = content.toString("base64")
 
-    if(!limit || content.length < limit) {
-        return "module.exports = " + JSON.stringify("data:" + (mimetype ? mimetype + ";" : "") + "base64," + content)
+    if(!limit || b64Content.length < limit) {
+        return "module.exports = " + JSON.stringify("data:" + (mimetype ? mimetype + ";" : "") + "base64," + b64Content)
     } else {
-        let callback = this.async()
-        let fn = options.uploadFn || upload
+        if (options.uploadUrl) {
+            let callback = this.async()
+            let fn = options.uploadFn || upload
 
-        fn.call(null, options.uploadUrl, this.resourcePath, content).then(([filepath, url]) => {
-            callback(null, "module.exports = " + JSON.stringify(`${url}`))
-        })
+            fn.call(null, options.uploadUrl, this.resourcePath, b64Content).then(([filepath, url]) => {
+                callback(null, "module.exports = " + JSON.stringify(`${url}`))
+            })
+        } else {
+            let fileLoader = require('file-loader')
+
+            return fileLoader.call(this, content)
+        }
     }
 }
 
